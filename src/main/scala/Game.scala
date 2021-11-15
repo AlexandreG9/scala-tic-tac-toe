@@ -1,27 +1,10 @@
-import scala.annotation.tailrec
-
 object Main extends App {
   val playerA = new PlayerA
   val playerB = new PlayerB
 
-  val grid = Grid(List(
-    List(Cell(Some(playerA)), Cell(Some(playerA)), Cell(Some(playerB))),
-    List(Cell(Some(playerA)), Cell(None), Cell(Some(playerB))),
-    List(Cell(Some(playerA)), Cell(None), Cell(Some(playerA)))
-  ))
+  val startingGrid = Grid.newGrid()
+  play(startingGrid, playerA, playerB)
 
-  printGrid(grid)
-
-  println(checkGrid(grid))
-
-
-  /**
-   * A list of row
-   * Each row have 3 cells
-   *
-   * @param cells
-   */
-  case class Grid(cells: List[List[Cell]])
 
   def getRowFromColumn[A](list: List[List[A]], acc: List[List[A]] = List.empty): List[List[A]] = {
     if (list.isEmpty || list.head.isEmpty) acc
@@ -34,15 +17,23 @@ object Main extends App {
   }
 
 
-  def play(grid: Grid): Unit = {
+  def play(grid: Grid, playingPlayer: Player, otherPlayer: Player, round: Int = 1): Unit = {
     checkGrid(grid) match {
-      case Some(value) => println(s"$value win !!")
-      case None => {
+      case Some(value) => println(s"Player ${value.getSign()} win !!")
+      case None =>
         // Ask input
-        val input = ???
-        val newGrid = ???
-        play(newGrid)
-      }
+        println(s"Round $round")
+        printGrid(grid)
+        val newGrid = getNewGrid(grid, playingPlayer)
+        play(newGrid, otherPlayer, playingPlayer, round.+(1))
+    }
+  }
+
+  private def getNewGrid(grid: Grid, player: Player): Grid = {
+    val input = InputController.readInput(player)
+    InputController.updateGrid(grid, input, player) match {
+      case Some(value) => value
+      case None => getNewGrid(grid, player)
     }
   }
 
